@@ -111,6 +111,35 @@ const FRICTIONS = [
   }
 ];
 
+/* Questions for the "Non-HiEd Employers" path — same 6 dimensions / scoring as FRICTIONS,
+   interleaved order: all first questions per dimension, then all second questions. */
+const EMPLOYER_QS = [
+  [
+    'To what extent has your organization diagnosed its current and emerging AI capability needs with enough specificity to communicate them to education partners?',
+    'To what extent are you sharing workforce signals with university partners on a regular, structured basis rather than waiting for annual hiring cycles?'
+  ],
+  [
+    'To what extent does your organization maintain systematic, ongoing relationships with university partners that go beyond graduate recruitment or career fairs?',
+    'To what extent are you providing clear, continuous feedback to education partners about role-level expectations and day-one graduate performance?'
+  ],
+  [
+    'To what extent is your organization actively supporting universities in understanding the practical implications of AI for your sector?',
+    'To what extent are you embedding practitioners, sharing case materials, or opening workplace environments to help faculty build relevant AI capabilities?'
+  ],
+  [
+    'To what extent have you communicated what responsible AI governance looks like inside your organization and what will be expected of graduates from day one?',
+    'To what extent are you contributing to or referencing external accreditation frameworks and professional standards for AI use in your sector?'
+  ],
+  [
+    'To what extent is your organization co-designing authentic, workplace-aligned AI learning experiences with university partners?',
+    'To what extent are you sponsoring or hosting structured opportunities for students to practice applied AI in real work environments before graduation?'
+  ],
+  [
+    'To what extent are you communicating the specific AI-ready competencies your sector requires directly to universities using common skills frameworks?',
+    'To what extent are you translating your hiring and performance data into actionable feedback that helps institutions close specific graduate capability gaps?'
+  ]
+];
+
 const RESPONSES = [
   { label: 'Not yet started',   val: 1 },
   { label: 'Early exploration', val: 2 },

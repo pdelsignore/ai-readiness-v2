@@ -117,6 +117,15 @@
     .btn-start .arr { transition: transform .2s; }
     .btn-start:hover .arr { transform: translateX(4px); }
 
+    .intro-actions {
+      display: flex; flex-direction: row; flex-wrap: nowrap;
+      gap: 12px; align-items: stretch;
+    }
+    .intro-actions .btn-start {
+      flex: 1; min-width: 0; justify-content: center;
+      text-align: center; white-space: normal; line-height: 1.25;
+      padding: 14px 16px;
+    }
     /* ─── DIAGNOSTIC SCREEN ──────────────────────────────── */
     #screen-diagnostic {
       background: var(--pp);
@@ -364,6 +373,40 @@
     }
     .btn-restart:hover { background: var(--ame); transform: translateY(-2px); }
 
+    /* Case study request (results) */
+    .cs-report-form { margin: 0; }
+    .cs-field { margin-bottom: 16px; }
+    .cs-field:last-of-type { margin-bottom: 18px; }
+    .cs-field label {
+      display: block; font-size: 12px; font-weight: 600; color: var(--pp);
+      margin-bottom: 6px; letter-spacing: 0.02em;
+    }
+    .cs-field input {
+      width: 100%; padding: 12px 14px; font-family: var(--font); font-variant-ligatures: none;
+      font-size: 15px; color: var(--pp);
+      border: 1.5px solid #ddd; border-radius: 8px; background: #fff;
+      transition: border-color .15s;
+    }
+    .cs-field input:focus {
+      outline: none; border-color: var(--ame);
+    }
+    .cs-form-error {
+      font-size: 13px; color: #b00020; margin: 0 0 14px; line-height: 1.4;
+    }
+    .cs-form-error[hidden] { display: none !important; }
+    .btn-cs-submit {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 100%; padding: 14px 28px; margin-top: 4px;
+      background: var(--ame); color: #fff; border: none; border-radius: 8px;
+      font-family: var(--font); font-variant-ligatures: none;
+      font-size: 15px; font-weight: 700; cursor: pointer; transition: background .2s, transform .2s;
+    }
+    .btn-cs-submit:hover { background: #6a3fc0; transform: translateY(-1px); }
+    .cs-report-thanks {
+      font-size: 15px; line-height: 1.65; color: var(--ux); margin: 0;
+    }
+    .cs-report-thanks[hidden] { display: none !important; }
+
     /* Report CTA */
     .report-strip { background: var(--pp); padding: 64px 56px; text-align: center; }
     .report-inner { max-width: 560px; margin: 0 auto; }
@@ -429,10 +472,16 @@
       <span class="feature-chip"><span class="feature-chip-icon">✦</span> Tailored for HigherEd</span>
     </div>
 
-    <button class="btn-start" onclick="startDiagnostic()">
-      Start Diagnostic
-      <span class="arr" aria-hidden="true">→</span>
-    </button>
+    <div class="intro-actions">
+      <button type="button" class="btn-start" onclick="startDiagnostic('institution')">
+        Institution Affiliates
+        <span class="arr" aria-hidden="true">→</span>
+      </button>
+      <button type="button" class="btn-start" onclick="startDiagnostic('employer')">
+        Non-HiEd Employers
+        <span class="arr" aria-hidden="true">→</span>
+      </button>
+    </div>
 
   </div>
 </div>
@@ -476,7 +525,7 @@
 
       <div class="res-topbar">
         <div>
-          <p class="eyebrow res-eyebrow">Your Results</p>
+          <p class="eyebrow res-eyebrow" id="res-results-eyebrow">Your Results</p>
           <h2 class="res-h1">Your AI Readiness<br>Friction Profile</h2>
           <p class="res-sub">Across 6 dimensions of the AI Readiness Framework</p>
         </div>
@@ -524,7 +573,7 @@
     <div class="report-inner">
       <h3 class="report-h">Explore the full research</h3>
       <p class="report-sub">Your results are just the beginning. Visit the AI Readiness main page below to explore the complete framework, access the full report, and discover all available resources.</p>
-      <a href="https://www.pearson.com/power-of-learning/ai-readiness" class="btn-report">Access the Full Report →</a>
+      <a href="https://www.pearson.com/power-of-learning/ai-readiness.html" class="btn-report">Access the Full Report →</a>
     </div>
   </section>
 
@@ -545,6 +594,13 @@ const SEQ = [
 let curr = 0;
 let answers = new Array(12).fill(null);
 let sel = null;
+/** @type {'institution'|'employer'} */
+let diagnosticMode = 'institution';
+
+function questionTextAt(fi, qi) {
+  if (diagnosticMode === 'employer') return EMPLOYER_QS[fi][qi];
+  return FRICTIONS[fi].qs[qi];
+}
 
 /* ═══════════════════════════════════════════════════════
    NAVIGATION
@@ -556,7 +612,8 @@ function showScreen(id) {
   el.scrollTop = 0;
 }
 
-function startDiagnostic() {
+function startDiagnostic(mode) {
+  diagnosticMode = mode === 'employer' ? 'employer' : 'institution';
   curr = 0; answers = new Array(12).fill(null); sel = null;
   showScreen('diagnostic');
   renderQ();
@@ -583,7 +640,7 @@ function renderQ() {
   document.getElementById('progress-role').setAttribute('aria-valuenow', Math.round(pct));
   document.getElementById('q-counter').textContent = `${curr+1}/12`;
   document.getElementById('q-friction-label').textContent = f.name;
-  document.getElementById('q-text').textContent = f.qs[qi];
+  document.getElementById('q-text').textContent = questionTextAt(fi, qi);
 
   // Build 1-5 scale buttons
   const nums = document.getElementById('scale-nums');
@@ -778,6 +835,12 @@ function buildHeatMap(scores, primaryId) {
    BUILD RESULTS
 ═══════════════════════════════════════════════════════ */
 function buildResults() {
+  const resultEyebrow =
+    diagnosticMode === 'employer'
+      ? 'Your Result: Non-HiED Employer'
+      : 'Your Result: Institution Affiliate';
+  document.getElementById('res-results-eyebrow').textContent = resultEyebrow;
+
   const scores    = computeScores();
   const sorted    = [...scores].sort((a,b) => b.friction - a.friction);
   const primary   = sorted[0];
@@ -832,6 +895,8 @@ function buildResults() {
     `;
   }).join('');
 
+  const orgFieldLabel = diagnosticMode === 'employer' ? 'Company' : 'Institution';
+
   // Insights
   document.getElementById('insights').innerHTML = `
     <div>
@@ -860,6 +925,28 @@ function buildResults() {
       </div>
     </div>
     <div>
+      <p class="eyebrow sec-label ins-card-label">Request A Case Study Opportunity Report</p>
+      <div class="ins-card">
+        <p class="cs-form-error" id="cs-report-error" role="alert" hidden></p>
+        <form class="cs-report-form" id="cs-report-form" onsubmit="submitCaseStudyRequest(event)" novalidate>
+          <div class="cs-field">
+            <label for="cs-report-name">Name</label>
+            <input id="cs-report-name" name="report_name" type="text" autocomplete="name" required />
+          </div>
+          <div class="cs-field">
+            <label for="cs-report-org">${orgFieldLabel}</label>
+            <input id="cs-report-org" name="report_org" type="text" autocomplete="organization" required />
+          </div>
+          <div class="cs-field">
+            <label for="cs-report-email">Email address</label>
+            <input id="cs-report-email" name="report_email" type="email" autocomplete="email" inputmode="email" required />
+          </div>
+          <button type="submit" class="btn-cs-submit">Submit</button>
+        </form>
+        <p class="cs-report-thanks" id="cs-report-thanks" hidden>Thank you. We have received your request and will follow up by email.</p>
+      </div>
+    </div>
+    <div>
       <button class="btn-restart" onclick="restartDiagnostic()">← Retake Diagnostic</button>
     </div>
   `;
@@ -876,6 +963,36 @@ function buildResults() {
 }
 
 function restartDiagnostic() { showScreen('intro'); }
+
+function submitCaseStudyRequest(e) {
+  e.preventDefault();
+  const form = document.getElementById('cs-report-form');
+  const err = document.getElementById('cs-report-error');
+  const thanks = document.getElementById('cs-report-thanks');
+  if (!form || !err || !thanks) return false;
+
+  const name = (form.querySelector('#cs-report-name')?.value || '').trim();
+  const org = (form.querySelector('#cs-report-org')?.value || '').trim();
+  const email = (form.querySelector('#cs-report-email')?.value || '').trim();
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  if (!name || !org || !email) {
+    err.textContent = 'Please fill in all fields.';
+    err.hidden = false;
+    return false;
+  }
+  if (!emailOk) {
+    err.textContent = 'Please enter a valid email address.';
+    err.hidden = false;
+    return false;
+  }
+
+  err.hidden = true;
+  err.textContent = '';
+  form.hidden = true;
+  thanks.hidden = false;
+  return false;
+}
 
 
 // Boot
