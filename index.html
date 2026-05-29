@@ -90,6 +90,7 @@
       color: rgba(255,255,255,.6);
       margin-bottom: 28px;
     }
+    .intro-desc-cta { margin-bottom: 20px; }
 
     .feature-chips {
       display: flex; flex-wrap: nowrap; gap: 10px; margin-bottom: 32px;
@@ -122,10 +123,23 @@
       gap: 12px; align-items: stretch;
     }
     .intro-actions .btn-start {
-      flex: 1; min-width: 0; justify-content: center;
-      text-align: center; white-space: normal; line-height: 1.25;
-      padding: 14px 16px;
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: row; align-items: center; justify-content: space-between;
+      gap: 12px; text-align: left;
+      padding: 16px 18px;
     }
+    .btn-start-copy {
+      display: flex; flex-direction: column; gap: 4px;
+      flex: 1; min-width: 0;
+    }
+    .btn-start-title {
+      font-size: 15px; font-weight: 700; line-height: 1.25;
+    }
+    .btn-start-sub {
+      font-size: 12px; font-weight: 400; line-height: 1.35;
+      opacity: 0.82;
+    }
+    .btn-start .arr { flex-shrink: 0; }
     /* ─── DIAGNOSTIC SCREEN ──────────────────────────────── */
     #screen-diagnostic {
       background: var(--pp);
@@ -363,6 +377,20 @@
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .rec-text { font-size: 14px; line-height: 1.65; color: var(--ux); padding-top: 3px; }
+    .recs-fade .rec:nth-child(1) .rec-text { color: #333; }
+    .recs-fade .rec:nth-child(2) .rec-text { color: #888; }
+    .recs-fade .rec:nth-child(3) .rec-text { color: #c5c5c5; }
+    .recs-fade .rec:nth-child(1) .rec-n { background: var(--pp); }
+    .recs-fade .rec:nth-child(2) .rec-n { background: #888; }
+    .recs-fade .rec:nth-child(3) .rec-n { background: #c5c5c5; }
+    .rec-actionable {
+      font-size: 15px; line-height: 1.65; color: var(--ux);
+      font-weight: 700; margin: 24px 0 28px;
+    }
+    .cs-report-title {
+      font-size: 15px; font-weight: 700; color: var(--ame);
+      margin: 0 0 18px; line-height: 1.35;
+    }
 
     .btn-restart {
       display: inline-flex; align-items: center; gap: 10px;
@@ -381,14 +409,24 @@
       display: block; font-size: 12px; font-weight: 600; color: var(--pp);
       margin-bottom: 6px; letter-spacing: 0.02em;
     }
-    .cs-field input {
+    .cs-field input:not([type="checkbox"]) {
       width: 100%; padding: 12px 14px; font-family: var(--font); font-variant-ligatures: none;
       font-size: 15px; color: var(--pp);
       border: 1.5px solid #ddd; border-radius: 8px; background: #fff;
       transition: border-color .15s;
     }
-    .cs-field input:focus {
+    .cs-field input:not([type="checkbox"]):focus {
       outline: none; border-color: var(--ame);
+    }
+    .cs-field-check { margin-bottom: 18px; }
+    .cs-field-check .cs-check-label {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 12px; font-weight: 400; color: var(--ux);
+      line-height: 1.45; cursor: pointer;
+    }
+    .cs-field-check input[type="checkbox"] {
+      width: 15px; height: 15px; margin-top: 2px; flex-shrink: 0;
+      accent-color: var(--ame); cursor: pointer;
     }
     .cs-form-error {
       font-size: 13px; color: #b00020; margin: 0 0 14px; line-height: 1.4;
@@ -448,6 +486,7 @@
       .primary-banner { flex-direction: column; gap: 20px; }
       .pf-divider { width: 100%; height: 1px; }
       .fric-cards { grid-template-columns: 1fr; }
+      .intro-actions { flex-direction: column; }
     }
   </style>
 </head>
@@ -463,7 +502,10 @@
     <h1 class="intro-h1">AI Readiness &amp; Friction<br><span style="color:#fff">Diagnostic</span></h1>
 
     <p class="intro-desc">
-      Identify the strategic friction points slowing down your institution's journey toward AI adoption.
+      Not all AI readiness challenges look the same. Whether you're navigating adoption inside a university or preparing your workforce for an AI-ready future, this diagnostic surfaces the friction points that matter most to you.
+    </p>
+    <p class="intro-desc intro-desc-cta">
+      Choose the option that best matches the organisation you're answering for:
     </p>
 
     <div class="feature-chips">
@@ -474,11 +516,17 @@
 
     <div class="intro-actions">
       <button type="button" class="btn-start" onclick="startDiagnostic('institution')">
-        Institution Affiliates
+        <span class="btn-start-copy">
+          <span class="btn-start-title">Education organisation</span>
+          <span class="btn-start-sub">School, college, university, education group</span>
+        </span>
         <span class="arr" aria-hidden="true">→</span>
       </button>
       <button type="button" class="btn-start" onclick="startDiagnostic('employer')">
-        Non-HiEd Employers
+        <span class="btn-start-copy">
+          <span class="btn-start-title">Employer organisation</span>
+          <span class="btn-start-sub">Company, public sector, charity, industry body</span>
+        </span>
         <span class="arr" aria-hidden="true">→</span>
       </button>
     </div>
@@ -837,8 +885,8 @@ function buildHeatMap(scores, primaryId) {
 function buildResults() {
   const resultEyebrow =
     diagnosticMode === 'employer'
-      ? 'Your Result: Non-HiED Employer'
-      : 'Your Result: Institution Affiliate';
+      ? 'Your Result: Employer organisation'
+      : 'Your Result: Education organisation';
   document.getElementById('res-results-eyebrow').textContent = resultEyebrow;
 
   const scores    = computeScores();
@@ -895,8 +943,6 @@ function buildResults() {
     `;
   }).join('');
 
-  const orgFieldLabel = diagnosticMode === 'employer' ? 'Company' : 'Institution';
-
   // Insights
   document.getElementById('insights').innerHTML = `
     <div>
@@ -914,7 +960,7 @@ function buildResults() {
     <div>
       <p class="eyebrow sec-label ins-card-label">Recommended actions</p>
       <div class="ins-card">
-        <div class="recs">
+        <div class="recs recs-fade">
           ${pf.recs.map((r,i) => `
             <div class="rec">
               <div class="rec-n" aria-hidden="true">${i+1}</div>
@@ -922,11 +968,8 @@ function buildResults() {
             </div>
           `).join('')}
         </div>
-      </div>
-    </div>
-    <div>
-      <p class="eyebrow sec-label ins-card-label">Request A Case Study Opportunity Report</p>
-      <div class="ins-card">
+        <p class="rec-actionable">Your results, made actionable. Receive a tailored report with recommended actions across all six friction areas plus case studies from institutions and organizations leading the way.</p>
+        <h3 class="cs-report-title">Request A Case Study Opportunity Report</h3>
         <p class="cs-form-error" id="cs-report-error" role="alert" hidden></p>
         <form class="cs-report-form" id="cs-report-form" onsubmit="submitCaseStudyRequest(event)" novalidate>
           <div class="cs-field">
@@ -934,12 +977,26 @@ function buildResults() {
             <input id="cs-report-name" name="report_name" type="text" autocomplete="name" required />
           </div>
           <div class="cs-field">
-            <label for="cs-report-org">${orgFieldLabel}</label>
-            <input id="cs-report-org" name="report_org" type="text" autocomplete="organization" required />
+            <label for="cs-report-title">Title</label>
+            <input id="cs-report-title" name="report_title" type="text" autocomplete="organization-title" required />
           </div>
           <div class="cs-field">
-            <label for="cs-report-email">Email address</label>
+            <label for="cs-report-company">Company</label>
+            <input id="cs-report-company" name="report_company" type="text" autocomplete="organization" required />
+          </div>
+          <div class="cs-field">
+            <label for="cs-report-country">Country</label>
+            <input id="cs-report-country" name="report_country" type="text" autocomplete="country-name" required />
+          </div>
+          <div class="cs-field">
+            <label for="cs-report-email">Email Address</label>
             <input id="cs-report-email" name="report_email" type="email" autocomplete="email" inputmode="email" required />
+          </div>
+          <div class="cs-field cs-field-check">
+            <label class="cs-check-label" for="cs-report-contact">
+              <input id="cs-report-contact" name="report_contact" type="checkbox" value="yes" />
+              <span>Would you like someone at Pearson to contact you to discuss AI Readiness?</span>
+            </label>
           </div>
           <button type="submit" class="btn-cs-submit">Submit</button>
         </form>
@@ -972,11 +1029,13 @@ function submitCaseStudyRequest(e) {
   if (!form || !err || !thanks) return false;
 
   const name = (form.querySelector('#cs-report-name')?.value || '').trim();
-  const org = (form.querySelector('#cs-report-org')?.value || '').trim();
+  const title = (form.querySelector('#cs-report-title')?.value || '').trim();
+  const company = (form.querySelector('#cs-report-company')?.value || '').trim();
+  const country = (form.querySelector('#cs-report-country')?.value || '').trim();
   const email = (form.querySelector('#cs-report-email')?.value || '').trim();
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  if (!name || !org || !email) {
+  if (!name || !title || !company || !country || !email) {
     err.textContent = 'Please fill in all fields.';
     err.hidden = false;
     return false;
