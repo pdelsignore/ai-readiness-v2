@@ -649,6 +649,10 @@ function questionTextAt(fi, qi) {
   return FRICTIONS[fi].qs[qi];
 }
 
+function frictionRecs(f) {
+  return diagnosticMode === 'employer' ? f.employerRecs : f.recs;
+}
+
 /* ═══════════════════════════════════════════════════════
    NAVIGATION
 ═══════════════════════════════════════════════════════ */
@@ -894,6 +898,7 @@ function buildResults() {
   const secondary = sorted[1];
   const pf        = FRICTIONS.find(f => f.id === primary.id);
   const sf        = FRICTIONS.find(f => f.id === secondary.id);
+  const profileRecs = frictionRecs(pf);
   const pcol      = frictionColor(primary.friction);
   const scol      = frictionColor(secondary.friction);
 
@@ -960,7 +965,7 @@ function buildResults() {
       <p class="eyebrow sec-label ins-card-label">Recommended actions</p>
       <div class="ins-card">
         <div class="recs recs-fade">
-          ${pf.recs.map((r,i) => `
+          ${profileRecs.map((r,i) => `
             <div class="rec">
               <div class="rec-n" aria-hidden="true">${i+1}</div>
               <p class="rec-text">${r}</p>

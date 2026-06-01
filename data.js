@@ -9,7 +9,8 @@
      qs       — 2 diagnostic questions shown to the user
      insight  — "Why this matters" paragraph
      reframe  — "What the evidence shows" pull quote
-     recs     — array of 3 recommended actions
+     recs         — array of 3 recommended actions (education organisation path)
+     employerRecs — array of 3 recommended actions (employer organisation path)
 ═══════════════════════════════════════════════════════ */
 
 const FRICTIONS = [
@@ -27,6 +28,11 @@ const FRICTIONS = [
       'Accelerate curriculum review cycles through modular design and stackable, fast-iterating credentials.',
       'Establish industry advisory boards that surface workforce shifts between formal review cycles.',
       'Build agile review mechanisms that can update course content within months, not years.'
+    ],
+    employerRecs: [
+      'Establish a standing AI advisory channel with two or three priority universities to share real-time skill shifts before hiring gaps appear.',
+      'Embed industry practitioners into curriculum advisory boards with authority to influence content cycles.',
+      'Track the lag between new AI capability emerging in your workflows and when graduates arrive ready, then share back with partners.'
     ]
   },
   {
@@ -43,6 +49,11 @@ const FRICTIONS = [
       'Build structural, ongoing employer feedback loops that directly inform learning design and assessment.',
       'Embed industry advisory boards into curriculum review and graduate outcome processes.',
       'Co-design degree pathways and assessments with employer partners rather than for them.'
+    ],
+    employerRecs: [
+      'Sponsor structured industry projects within degree programs where your teams pose real business problems and assess student outputs against workplace standards.',
+      'Contribute to employer skills surveys and labor-market analyses universities conduct, ensuring institutions design curriculum with current data.',
+      'Co-author skills frameworks with two or three partner universities, translating your hiring criteria into language curriculum designers can directly use.'
     ]
   },
   {
@@ -59,6 +70,11 @@ const FRICTIONS = [
       'Treat faculty AI capability as core institutional infrastructure with sustained, ongoing professional development.',
       'Create cross-disciplinary peer learning networks where faculty share applied AI teaching practices.',
       'Embed AI capability development into hiring, promotion, and tenure criteria across departments.'
+    ],
+    employerRecs: [
+      'Share anonymized case materials, tools, or use cases with partner universities so faculty teach AI application credibly, grounded in real practice.',
+      'Sponsor faculty AI fellowships that fund educators to spend structured time inside your AI teams, treating their development as a pipeline investment.',
+      'Invite faculty to internal AI training sessions your organization runs, giving them access to the same upskilling your own employees receive.'
     ]
   },
   {
@@ -75,6 +91,11 @@ const FRICTIONS = [
       'Replace prohibition-based policies with clear, enabling guidance integrated into everyday learning and assessment.',
       'Communicate AI rules as supportive frameworks for ethical practice, not punitive boundaries to avoid.',
       'Ensure consistent AI guidance across institutional, departmental, and individual course levels.'
+    ],
+    employerRecs: [
+      'Publish a clear statement of how your organization expects AI to be used by graduates from day one, including disclosure and accountability norms.',
+      'Co-develop AI use guidelines with universities that mirror professional standards, so students learn workplace-appropriate habits during education rather than after hiring.',
+      'Model transparent AI use in communications with universities — show how disclosure, attribution, and verification work in practice, not just in policy.'
     ]
   },
   {
@@ -91,6 +112,11 @@ const FRICTIONS = [
       'Embed structured, credit-bearing applied AI experiences into core curriculum across every degree program.',
       'Partner with employers to host authentic, project-based AI work for students before graduation.',
       'Design assessments around real workplace scenarios rather than theoretical or test-based AI knowledge.'
+    ],
+    employerRecs: [
+      'Co-design credit-bearing applied projects with universities where students work on authentic business problems with real stakeholders, real constraints, and real deliverables.',
+      'Host AI sandboxes or innovation labs where students from partner universities apply tools in authentic settings under the supervision of practicing professionals.',
+      'Publish case studies of AI workflows in your organization that universities can use to design realistic assignments, simulations, and assessment scenarios.'
     ]
   },
   {
@@ -107,6 +133,11 @@ const FRICTIONS = [
       'Balance development of functional proficiency, strategic intelligence, ethical stewardship, and critical human skills equally.',
       'Track graduate readiness against employer-defined competency frameworks, not internal academic benchmarks.',
       'Translate employer feedback on day-one performance into tangible curriculum and assessment changes.'
+    ],
+    employerRecs: [
+      'Co-design a Graduate AI Skills Framework with institutions, articulating what a day-one-ready AI graduate looks like in observable, assessable behaviors.',
+      'Share post-hire feedback on graduate readiness systematically with partner universities, turning hiring outcomes into structured signals for curriculum design.',
+      'Differentiate the human skills you most value alongside AI proficiency (e.g., judgment, communication, ethical reasoning) so institutions don\'t optimize for tools alone.'
     ]
   }
 ];
