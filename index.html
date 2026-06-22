@@ -409,13 +409,23 @@
       display: block; font-size: 12px; font-weight: 600; color: var(--pp);
       margin-bottom: 6px; letter-spacing: 0.02em;
     }
-    .cs-field input:not([type="checkbox"]) {
+    .cs-field input:not([type="checkbox"]),
+    .cs-field select {
       width: 100%; padding: 12px 14px; font-family: var(--font); font-variant-ligatures: none;
       font-size: 15px; color: var(--pp);
       border: 1.5px solid #ddd; border-radius: 8px; background: #fff;
       transition: border-color .15s;
     }
-    .cs-field input:not([type="checkbox"]):focus {
+    .cs-field select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%235a3d8a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px;
+      cursor: pointer;
+    }
+    .cs-field input:not([type="checkbox"]):focus,
+    .cs-field select:focus {
       outline: none; border-color: var(--ame);
     }
     .cs-field-check { margin-bottom: 18px; }
@@ -440,6 +450,9 @@
       font-size: 15px; font-weight: 700; cursor: pointer; transition: background .2s, transform .2s;
     }
     .btn-cs-submit:hover { background: #6a3fc0; transform: translateY(-1px); }
+    .hubspot-employer-form { margin-top: 4px; }
+    .hubspot-employer-form .hs-form-frame,
+    .hubspot-employer-form .hs-form { max-width: 100%; }
     .cs-report-thanks {
       font-size: 15px; line-height: 1.65; color: var(--ux); margin: 0;
     }
@@ -627,6 +640,7 @@
 </div>
 
 
+<script charset="utf-8" type="text/javascript" src="https://js.hsforms.net/forms/embed/v2.js"></script>
 <script src="data.js"></script>
 <script>
 // Interleaved question order: all Q1s then all Q2s
@@ -651,6 +665,152 @@ function questionTextAt(fi, qi) {
 
 function frictionRecs(f) {
   return diagnosticMode === 'employer' ? f.employerRecs : f.recs;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function selectOptionsHtml(items, placeholder) {
+  const opts = [`<option value="" disabled selected hidden>${escapeHtml(placeholder)}</option>`];
+  items.forEach(item => opts.push(`<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`));
+  return opts.join('');
+}
+
+function buildReportFormHtml() {
+  if (diagnosticMode === 'employer') {
+    return `<div id="hubspot-employer-form" class="hubspot-employer-form"></div>`;
+  }
+
+  return `
+        <form class="cs-report-form" id="cs-report-form" onsubmit="submitCaseStudyRequest(event)" novalidate>
+          <div class="cs-field">
+            <label for="cs-report-first-name">First Name</label>
+            <input id="cs-report-first-name" name="report_first_name" type="text" autocomplete="given-name" required />
+          </div>
+          <div class="cs-field">
+            <label for="cs-report-last-name">Last Name</label>
+            <input id="cs-report-last-name" name="report_last_name" type="text" autocomplete="family-name" required />
+          </div>
+          <div class="cs-field">
+            <label for="cs-report-role">Role</label>
+            <select id="cs-report-role" name="report_role" required>
+              ${selectOptionsHtml(EDUCATOR_ROLES, 'Select role')}
+            </select>
+          </div>
+          <div class="cs-field">
+            <label for="cs-report-institution">Institution Name</label>
+            <input id="cs-report-institution" name="report_institution" type="text" autocomplete="organization" required />
+          </div>
+          <div class="cs-field">
+            <label for="cs-report-country">Country</label>
+            <select id="cs-report-country" name="report_country" required>
+              ${selectOptionsHtml(COUNTRIES, 'Select country')}
+            </select>
+          </div>
+          <div class="cs-field">
+            <label for="cs-report-email">Email Address</label>
+            <input id="cs-report-email" name="report_email" type="email" autocomplete="email" inputmode="email" required />
+          </div>
+          <div class="cs-field cs-field-check">
+            <label class="cs-check-label" for="cs-report-contact">
+              <input id="cs-report-contact" name="report_contact" type="checkbox" value="yes" />
+              <span>I welcome further communication from Pearson regarding AI Readiness insights and opportunities.</span>
+            </label>
+          </div>
+          <button type="submit" class="btn-cs-submit">Submit</button>
+        </form>`;
+}
+
+const HUBSPOT_EMPLOYER = {
+  portalId: '2629051',
+  formId: '956879f1-43ae-476c-9d21-9d6ec55ea98f',
+  region: 'na1'
+};
+
+const HUBSPOT_SCRIPT_SRC = 'https://js.hsforms.net/forms/embed/v2.js';
+
+function waitForHubSpotForms(timeoutMs = 15000) {
+  return new Promise((resolve, reject) => {
+    if (window.hbspt?.forms?.create) {
+      resolve();
+      return;
+    }
+
+    const started = Date.now();
+    const timer = setInterval(() => {
+      if (window.hbspt?.forms?.create) {
+        clearInterval(timer);
+        resolve();
+        return;
+      }
+      if (Date.now() - started >= timeoutMs) {
+        clearInterval(timer);
+        reject(new Error('HubSpot forms API unavailable'));
+      }
+    }, 50);
+  });
+}
+
+function loadHubSpotFormsScript() {
+  let script = document.querySelector(`script[src="${HUBSPOT_SCRIPT_SRC}"]`);
+  if (!script) {
+    script = document.createElement('script');
+    script.charset = 'utf-8';
+    script.type = 'text/javascript';
+    script.src = HUBSPOT_SCRIPT_SRC;
+    script.async = true;
+    document.head.appendChild(script);
+  }
+  return waitForHubSpotForms();
+}
+
+function showHubSpotFormError(message) {
+  const err = document.getElementById('cs-report-error');
+  if (err) {
+    err.textContent = message;
+    err.hidden = false;
+  }
+}
+
+function embedEmployerHubSpotForm() {
+  const target = document.getElementById('hubspot-employer-form');
+  if (!target) return;
+
+  if (window.location.protocol === 'file:') {
+    showHubSpotFormError('The request form must be opened from a web server (for example your published GitHub Pages URL), not as a local file.');
+    return;
+  }
+
+  target.innerHTML = '';
+
+  requestAnimationFrame(() => {
+    loadHubSpotFormsScript()
+      .then(() => {
+        const err = document.getElementById('cs-report-error');
+        if (err) {
+          err.hidden = true;
+          err.textContent = '';
+        }
+
+        window.hbspt.forms.create({
+          portalId: HUBSPOT_EMPLOYER.portalId,
+          formId: HUBSPOT_EMPLOYER.formId,
+          region: HUBSPOT_EMPLOYER.region,
+          target: '#hubspot-employer-form',
+          onFormReady: function () {
+            if (err) err.hidden = true;
+          }
+        });
+      })
+      .catch(() => {
+        showHubSpotFormError('Unable to load the request form. Check your connection, disable ad blockers for this page, and refresh.');
+      });
+  });
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -975,35 +1135,7 @@ function buildResults() {
         <p class="rec-actionable">Your results, made actionable. Receive a tailored report with recommended actions across all six friction areas plus case studies from institutions and organizations leading the way.</p>
         <h3 class="cs-report-title">Request A Case Study Opportunity Report</h3>
         <p class="cs-form-error" id="cs-report-error" role="alert" hidden></p>
-        <form class="cs-report-form" id="cs-report-form" onsubmit="submitCaseStudyRequest(event)" novalidate>
-          <div class="cs-field">
-            <label for="cs-report-name">Name</label>
-            <input id="cs-report-name" name="report_name" type="text" autocomplete="name" required />
-          </div>
-          <div class="cs-field">
-            <label for="cs-report-title">Title</label>
-            <input id="cs-report-title" name="report_title" type="text" autocomplete="organization-title" required />
-          </div>
-          <div class="cs-field">
-            <label for="cs-report-company">Company</label>
-            <input id="cs-report-company" name="report_company" type="text" autocomplete="organization" required />
-          </div>
-          <div class="cs-field">
-            <label for="cs-report-country">Country</label>
-            <input id="cs-report-country" name="report_country" type="text" autocomplete="country-name" required />
-          </div>
-          <div class="cs-field">
-            <label for="cs-report-email">Email Address</label>
-            <input id="cs-report-email" name="report_email" type="email" autocomplete="email" inputmode="email" required />
-          </div>
-          <div class="cs-field cs-field-check">
-            <label class="cs-check-label" for="cs-report-contact">
-              <input id="cs-report-contact" name="report_contact" type="checkbox" value="yes" />
-              <span>I welcome further communication from Pearson regarding AI Readiness insights and opportunities.</span>
-            </label>
-          </div>
-          <button type="submit" class="btn-cs-submit">Submit</button>
-        </form>
+        ${buildReportFormHtml()}
         <p class="cs-report-thanks" id="cs-report-thanks" hidden>Thank you. We have received your request and will follow up by email.</p>
       </div>
     </div>
@@ -1013,6 +1145,10 @@ function buildResults() {
   `;
 
   showScreen('results');
+
+  if (diagnosticMode === 'employer') {
+    setTimeout(embedEmployerHubSpotForm, 100);
+  }
 
   // Animate bars after render
   requestAnimationFrame(() => setTimeout(() => {
@@ -1032,14 +1168,16 @@ function submitCaseStudyRequest(e) {
   const thanks = document.getElementById('cs-report-thanks');
   if (!form || !err || !thanks) return false;
 
-  const name = (form.querySelector('#cs-report-name')?.value || '').trim();
-  const title = (form.querySelector('#cs-report-title')?.value || '').trim();
-  const company = (form.querySelector('#cs-report-company')?.value || '').trim();
-  const country = (form.querySelector('#cs-report-country')?.value || '').trim();
   const email = (form.querySelector('#cs-report-email')?.value || '').trim();
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const firstName = (form.querySelector('#cs-report-first-name')?.value || '').trim();
+  const lastName = (form.querySelector('#cs-report-last-name')?.value || '').trim();
+  const role = (form.querySelector('#cs-report-role')?.value || '').trim();
+  const institution = (form.querySelector('#cs-report-institution')?.value || '').trim();
+  const country = (form.querySelector('#cs-report-country')?.value || '').trim();
+  const missing = !firstName || !lastName || !role || !institution || !country || !email;
 
-  if (!name || !title || !company || !country || !email) {
+  if (missing) {
     err.textContent = 'Please fill in all fields.';
     err.hidden = false;
     return false;
