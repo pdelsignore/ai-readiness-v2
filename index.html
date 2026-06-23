@@ -450,6 +450,17 @@
       font-size: 15px; font-weight: 700; cursor: pointer; transition: background .2s, transform .2s;
     }
     .btn-cs-submit:hover { background: #6a3fc0; transform: translateY(-1px); }
+    .btn-opportunity-report {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 100%; padding: 14px 28px; margin-top: 4px;
+      background: var(--ame); color: #fff; border: none; border-radius: 8px;
+      font-family: var(--font); font-variant-ligatures: none;
+      font-size: 15px; font-weight: 700; cursor: pointer; transition: background .2s, transform .2s;
+      text-decoration: none; text-align: center;
+    }
+    .btn-opportunity-report:hover { background: #6a3fc0; transform: translateY(-1px); color: #fff; }
+    .btn-opportunity-report.is-placeholder { cursor: default; opacity: 0.85; }
+    .btn-opportunity-report.is-placeholder:hover { background: var(--ame); transform: none; }
     .hubspot-employer-form { margin-top: 4px; }
     .hubspot-employer-form .hs-form-frame,
     .hubspot-employer-form .hs-form { max-width: 100%; }
@@ -667,63 +678,19 @@ function frictionRecs(f) {
   return diagnosticMode === 'employer' ? f.employerRecs : f.recs;
 }
 
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function selectOptionsHtml(items, placeholder) {
-  const opts = [`<option value="" disabled selected hidden>${escapeHtml(placeholder)}</option>`];
-  items.forEach(item => opts.push(`<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`));
-  return opts.join('');
-}
-
 function buildReportFormHtml() {
   if (diagnosticMode === 'employer') {
     return `<div id="hubspot-employer-form" class="hubspot-employer-form"></div>`;
   }
 
-  return `
-        <form class="cs-report-form" id="cs-report-form" onsubmit="submitCaseStudyRequest(event)" novalidate>
-          <div class="cs-field">
-            <label for="cs-report-first-name">First Name</label>
-            <input id="cs-report-first-name" name="report_first_name" type="text" autocomplete="given-name" required />
-          </div>
-          <div class="cs-field">
-            <label for="cs-report-last-name">Last Name</label>
-            <input id="cs-report-last-name" name="report_last_name" type="text" autocomplete="family-name" required />
-          </div>
-          <div class="cs-field">
-            <label for="cs-report-role">Role</label>
-            <select id="cs-report-role" name="report_role" required>
-              ${selectOptionsHtml(EDUCATOR_ROLES, 'Select role')}
-            </select>
-          </div>
-          <div class="cs-field">
-            <label for="cs-report-institution">Institution Name</label>
-            <input id="cs-report-institution" name="report_institution" type="text" autocomplete="organization" required />
-          </div>
-          <div class="cs-field">
-            <label for="cs-report-country">Country</label>
-            <select id="cs-report-country" name="report_country" required>
-              ${selectOptionsHtml(COUNTRIES, 'Select country')}
-            </select>
-          </div>
-          <div class="cs-field">
-            <label for="cs-report-email">Email Address</label>
-            <input id="cs-report-email" name="report_email" type="email" autocomplete="email" inputmode="email" required />
-          </div>
-          <div class="cs-field cs-field-check">
-            <label class="cs-check-label" for="cs-report-contact">
-              <input id="cs-report-contact" name="report_contact" type="checkbox" value="yes" />
-              <span>I welcome further communication from Pearson regarding AI Readiness insights and opportunities.</span>
-            </label>
-          </div>
-          <button type="submit" class="btn-cs-submit">Submit</button>
-        </form>`;
+  const url = EDUCATOR_OPPORTUNITY_REPORT_URL;
+  const isPlaceholder = !url || url === '#';
+  const linkClass = 'btn-opportunity-report' + (isPlaceholder ? ' is-placeholder' : '');
+  const linkAttrs = isPlaceholder
+    ? 'href="#" onclick="return false;" aria-disabled="true"'
+    : `href="${url.replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer"`;
+
+  return `<a class="${linkClass}" ${linkAttrs}>Request an Opportunity Report</a>`;
 }
 
 const HUBSPOT_EMPLOYER = {
@@ -1133,10 +1100,9 @@ function buildResults() {
           `).join('')}
         </div>
         <p class="rec-actionable">Your results, made actionable. Receive a tailored report with recommended actions across all six friction areas plus case studies from institutions and organizations leading the way.</p>
-        <h3 class="cs-report-title">Request A Case Study Opportunity Report</h3>
-        <p class="cs-form-error" id="cs-report-error" role="alert" hidden></p>
+        ${diagnosticMode === 'employer' ? '<h3 class="cs-report-title">Request A Case Study Opportunity Report</h3>' : ''}
+        ${diagnosticMode === 'employer' ? '<p class="cs-form-error" id="cs-report-error" role="alert" hidden></p>' : ''}
         ${buildReportFormHtml()}
-        <p class="cs-report-thanks" id="cs-report-thanks" hidden>Thank you. We have received your request and will follow up by email.</p>
       </div>
     </div>
     <div>
@@ -1160,40 +1126,6 @@ function buildResults() {
 }
 
 function restartDiagnostic() { showScreen('intro'); }
-
-function submitCaseStudyRequest(e) {
-  e.preventDefault();
-  const form = document.getElementById('cs-report-form');
-  const err = document.getElementById('cs-report-error');
-  const thanks = document.getElementById('cs-report-thanks');
-  if (!form || !err || !thanks) return false;
-
-  const email = (form.querySelector('#cs-report-email')?.value || '').trim();
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const firstName = (form.querySelector('#cs-report-first-name')?.value || '').trim();
-  const lastName = (form.querySelector('#cs-report-last-name')?.value || '').trim();
-  const role = (form.querySelector('#cs-report-role')?.value || '').trim();
-  const institution = (form.querySelector('#cs-report-institution')?.value || '').trim();
-  const country = (form.querySelector('#cs-report-country')?.value || '').trim();
-  const missing = !firstName || !lastName || !role || !institution || !country || !email;
-
-  if (missing) {
-    err.textContent = 'Please fill in all fields.';
-    err.hidden = false;
-    return false;
-  }
-  if (!emailOk) {
-    err.textContent = 'Please enter a valid email address.';
-    err.hidden = false;
-    return false;
-  }
-
-  err.hidden = true;
-  err.textContent = '';
-  form.hidden = true;
-  thanks.hidden = false;
-  return false;
-}
 
 
 // Boot
